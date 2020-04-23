@@ -4,11 +4,38 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const session = require('express-session');
-const redis = require('redis')
+const redis = require('redis');
+const formidable = require('formidable');
 const RedisStore = require('connect-redis')(session);
 const redisClient = redis.createClient()
 
+
 const app = express();
+
+app.use(function(req, res, next){
+ 
+  let contentType = req.headers["content-type"];
+ 
+  if (req.method === 'POST' && contentType.indexOf('multipart/form-data;') > -1) {
+    var form = formidable.IncomingForm({
+      uploadDir: path.join(__dirname, "/public/images"),
+      keepExtensions: true
+    });
+ 
+    form.parse(req, function(err, fields, files){
+
+      req.body = fields;
+      req.fields = fields;
+      req.files = files;
+ 
+      next();
+ 
+    });
+  } else {
+    next();
+  }
+ 
+});
 
 app.use(session({
   store: new RedisStore({
@@ -30,7 +57,7 @@ app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+//app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 

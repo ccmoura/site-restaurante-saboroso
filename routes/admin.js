@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const users = require("./../inc/users");
 const admin = require('../inc/admin');
+const menus = require('./../inc/menus');
+const reservations = require('./../inc/reservations')
 
 router.use(function (req, res, next){
     if(['/login'].indexOf(req.url) === -1 && !req.session.user){
@@ -22,9 +24,14 @@ router.get('/logout', function(req, res, next){
 })
 
 router.get("/", function(req, res, next) {
-    res.render("admin/index", {
-        menus: req.menus
-    });
+    admin.dashboard().then(data => {
+        res.render("admin/index", admin.getParams(req, {
+            data
+        }));
+    }).catch(err => {
+        console.log(err);
+    })
+    
 });
 
 router.post("/login", function(req, res, next){
@@ -47,34 +54,65 @@ router.get("/login", function(req, res, next) {
 });
 
 router.get("/contacts", function(req, res, next) {
-    res.render("admin/contacts",{
-        menus: req.menus
-    })
+    res.render("admin/contacts", admin.getParams(req))
 });
 
 router.get("/emails", function(req, res, next) {
-    res.render("admin/emails", {
-        menus: req.menus
-    })
+    res.render("admin/emails", admin.getParams(req))
 });
 
 router.get("/menus", function(req, res, next) {
-    res.render("admin/menus", {
-        menus: req.menus
+    menus.getMenus().then(data => {
+        res.render("admin/menus", admin.getParams(req, {
+            data
+        }))
     })
+    
 });
+
+router.post('/menus', function(req, res, next) {
+    menus.save(req.fields, req.files).then(results => {
+        res.send(results);
+    }).catch(err => {
+        res.send(err);
+    })
+})
+
+router.delete('/menus/:id', function(req, res, next) => {
+    menus.delete(req.params.id).then(result => {
+        res.send(result)
+    }).catch(err => {
+        res.send(err);
+    })
+})
 
 router.get("/reservations", function(req, res, next) {
-    res.render("admin/reservations", {
-        date:{},
-        menus: req.menus
+    reservations.getReservations().then(data => {
+        res.render("admin/reservations", admin.getParams(req, {
+            date: {},
+            data
+        }))
     })
 });
 
-router.get("/users", function(req, res, next) {
-    res.render("admin/users", {
-        menus: req.menus
+router.post('/reservations', function(req, res, next) {
+    reservations.save(req.fields, req.files).then(results => {
+        res.send(results);
+    }).catch(err => {
+        res.send(err);
     })
+})
+
+router.delete('/reservations/:id', function(req, res, next) => {
+    reservations.delete(req.params.id).then(result => {
+        res.send(result)
+    }).catch(err => {
+        res.send(err);
+    })
+})
+
+router.get("/users", function(req, res, next) {
+    res.render("admin/users", admin.getParams(req))
 });
 
 module.exports = router;
