@@ -20,6 +20,17 @@ module.exports = {
           });
         });
     },
+    delete(){
+        return new Promise((resolve, reject) => {
+            conn.query(`delete from tb_reservations where id = ?`, [id], (err, result) => {
+              if(err){
+                reject(err);
+              } else{
+                resolve(result);
+              }
+            })
+        })
+    },
     save(fields){
         return new Promise((resolve, reject) => {
             if(fields.date.indexOf('/') > -1){

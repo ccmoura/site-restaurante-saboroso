@@ -1,9 +1,12 @@
 const express = require("express");
+const moment = require("moment");
 const router = express.Router();
 const users = require("./../inc/users");
 const admin = require('../inc/admin');
 const menus = require('./../inc/menus');
 const reservations = require('./../inc/reservations')
+
+moment.locale("pt-BR")
 
 router.use(function (req, res, next){
     if(['/login'].indexOf(req.url) === -1 && !req.session.user){
@@ -78,7 +81,7 @@ router.post('/menus', function(req, res, next) {
     })
 })
 
-router.delete('/menus/:id', function(req, res, next) => {
+router.delete('/menus/:id', function(req, res, next) {
     menus.delete(req.params.id).then(result => {
         res.send(result)
     }).catch(err => {
@@ -90,7 +93,8 @@ router.get("/reservations", function(req, res, next) {
     reservations.getReservations().then(data => {
         res.render("admin/reservations", admin.getParams(req, {
             date: {},
-            data
+            data,
+            moment
         }))
     })
 });
@@ -103,7 +107,7 @@ router.post('/reservations', function(req, res, next) {
     })
 })
 
-router.delete('/reservations/:id', function(req, res, next) => {
+router.delete('/reservations/:id', function(req, res, next) {
     reservations.delete(req.params.id).then(result => {
         res.send(result)
     }).catch(err => {
@@ -112,7 +116,25 @@ router.delete('/reservations/:id', function(req, res, next) => {
 })
 
 router.get("/users", function(req, res, next) {
-    res.render("admin/users", admin.getParams(req))
+    users.getUsers().then(data => {
+        res.render("admin/users", admin.getParams(req, {data}))
+    })
+    
 });
 
+router.post("/users", function(req, res, next) {
+    users.save(req.fields).then(results => {
+        res.send(results);
+    }).catch(err => {
+        res.send(err);
+    })
+});
+
+router.delete("/users/:id", function(req, res, next) {
+    users.delete(req.params.id).then(results => {
+        res.send(results);
+    }).catch(err => {
+        res.send(err);
+    })
+});
 module.exports = router;
