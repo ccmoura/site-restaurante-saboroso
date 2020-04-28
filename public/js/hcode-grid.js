@@ -27,7 +27,7 @@ class HcodeGrid {
             btnDelete: '.btn-delete',
             onUpdateLoad: (form, name, data) => {
                 let input = form.querySelector('[name='+name+']');
-                if(input) input.value = data[value];
+                if(input) input.value = data[name];
             }
         }, configs)
 
